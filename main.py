@@ -2,12 +2,12 @@ import os
 
 from dotenv import load_dotenv
 
-from disnake import Intents
-from disnake.ext.commands import InteractionBot
+import disnake
+from disnake.ext.commands import Bot
 
 
-# my discord dev server ID
-TEST_GUILD_ID = 1080618917925486622
+# discord dev server IDs
+TEST_GUILD_IDS = [1080618917925486622, 484807069111943171, 618158757574344724]
 
 
 def setup_bot():
@@ -21,18 +21,24 @@ def setup_bot():
     load_dotenv()
 
     # set what the bot is capable of retrieving
-    intents = Intents(messages=True, guilds=True, message_content=True)
+    intents = disnake.Intents.default()
+    intents.presences = True
+    intents.members = True
+    intents.message_content = True
 
     # we're using an InteractionBot here because we're not going to support prefixing
-    bot = InteractionBot(intents=intents, test_guilds=[TEST_GUILD_ID])
-
-    # load our extended functionality using the cogs method
-    bot.load_extension('cogs.basics')
+    bot = Bot(intents=intents, test_guilds=TEST_GUILD_IDS, command_prefix="$")
 
     # add all of our events
     @bot.event
     async def on_ready():
         print("DIAMOND JOE RISES AGAIN")
+
+    # load our basic functionality, currently nothing
+    # bot.load_extension('cogs.basics')
+
+    # load our audio functionality
+    bot.load_extension('cogs.audio')
 
     return bot
 
