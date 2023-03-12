@@ -122,9 +122,6 @@ class Music(commands.Cog):
     async def play(self, inter: disnake.ApplicationCommandInteraction, *, url: str):
         """Plays a file from a provided YouTube URL"""
 
-        # defer the response as this is typically going to take more than 3 seconds
-        inter.response.defer()
-
         if not self.connected_client or self.connected_client.is_connected():
             await self.join(interaction=inter)
 
@@ -148,10 +145,20 @@ class Music(commands.Cog):
         Stops whatever the bot is currently playing.
         """
 
+        # if we're actually playing something, kill it and remove our client
         if self.connected_client.is_playing():
+
+            # kill the connected client and nuke it from scope
             await self.connected_client.disconnect()
             self.connected_client = None
+
+            # cancel our looped task to check if it's still playing
+            self.check_player_status.cancel()
             await inter.response.send_message(f"🍧 The deed is done. 🍧", ephemeral=True)
+
+        # we're not currently doing anything, and the task should insult the user
+        else:
+            await inter.response.send_message(f"🍧 I ain't doing anything, ya' clown. 🍧", ephemeral=True)
 
 
 def setup(bot: commands.Bot):
